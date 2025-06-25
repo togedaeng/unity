@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "418435178590",
+    "project_id": "togedaeng",
+    "storage_bucket": "togedaeng.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:418435178590:android:b110b3766613dfc66614cf",
+        "android_client_info": {
+          "package_name": "com.UnityTechnologies.com.unity.template.urpblank"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCsqeYfpGbjQW3HU8aiNyi_WpgkOmThYGo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
