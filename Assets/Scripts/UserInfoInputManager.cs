@@ -189,7 +189,7 @@ public class UserInfoInputManager : MonoBehaviour
                     isNicknameAvailable = response.isAvailable;
                     
                     if (response.isAvailable)
-                    {
+    {
                         Debug.Log($"✅ 닉네임 '{nickname}' 사용 가능!");
                         SetNicknameCheckButtonColor(true);
                     }

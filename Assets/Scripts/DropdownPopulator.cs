@@ -90,15 +90,15 @@ public class DropdownPopulator : MonoBehaviour
                 return;
             }
 
-            int maxDays = System.DateTime.DaysInMonth(year, month);
-            dayDropdown.ClearOptions();
-            List<string> days = new List<string>();
-            for (int i = 1; i <= maxDays; i++)
-            {
-                days.Add(i.ToString("D2"));
-            }
-            dayDropdown.AddOptions(days);
-            dayDropdown.value = 0;
+        int maxDays = System.DateTime.DaysInMonth(year, month);
+        dayDropdown.ClearOptions();
+        List<string> days = new List<string>();
+        for (int i = 1; i <= maxDays; i++)
+        {
+            days.Add(i.ToString("D2"));
+        }
+        dayDropdown.AddOptions(days);
+        dayDropdown.value = 0;
 
             Debug.Log($"✅ 일 드롭다운 업데이트 완료: {year}년 {month}월 -> {maxDays}일까지");
         }

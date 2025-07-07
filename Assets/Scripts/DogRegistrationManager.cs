@@ -45,6 +45,9 @@ public class DogRegistrationManager : MonoBehaviour
     [Header("씬 전환")]
     [SerializeField] private string nextSceneName = "Scene5";
     
+    [Header("디버그 UI (선택사항)")]
+    [SerializeField] private TMPro.TextMeshProUGUI debugText;
+    
     // 성격 데이터 (하드코딩 - 백엔드에 조회 API 없음)
     private readonly Dictionary<string, long> personalityMap = new Dictionary<string, long>
     {
@@ -126,15 +129,12 @@ public class DogRegistrationManager : MonoBehaviour
     
     private void SetupPersonalityDropdowns()
     {
-        Debug.Log("🎯 성격 드롭다운 설정 시작");
-        
         var personalityOptions = new List<TMP_Dropdown.OptionData>();
         personalityOptions.Add(new TMP_Dropdown.OptionData("성격 선택"));
         
         foreach (var personality in personalityMap.Keys)
         {
             personalityOptions.Add(new TMP_Dropdown.OptionData(personality));
-            Debug.Log($"📝 성격 추가: {personality}");
         }
         
         personality1Dropdown.options = new List<TMP_Dropdown.OptionData>(personalityOptions);
@@ -142,24 +142,6 @@ public class DogRegistrationManager : MonoBehaviour
         
         personality1Dropdown.value = 0;
         personality2Dropdown.value = 0;
-        
-        Debug.Log($"✅ 성격1 드롭다운 옵션 수: {personality1Dropdown.options.Count}");
-        Debug.Log($"✅ 성격2 드롭다운 옵션 수: {personality2Dropdown.options.Count}");
-        
-        // 드롭다운 컴포넌트 확인
-        if (personality1Dropdown == null)
-            Debug.LogError("❌ personality1Dropdown이 null입니다!");
-        else if (personality1Dropdown.template == null)
-            Debug.LogError("❌ personality1Dropdown의 template이 null입니다!");
-        else
-            Debug.Log("✅ personality1Dropdown 설정 완료");
-            
-        if (personality2Dropdown == null)
-            Debug.LogError("❌ personality2Dropdown이 null입니다!");
-        else if (personality2Dropdown.template == null)
-            Debug.LogError("❌ personality2Dropdown의 template이 null입니다!");
-        else
-            Debug.Log("✅ personality2Dropdown 설정 완료");
     }
     
     private void SetupEventListeners()
@@ -243,8 +225,6 @@ public class DogRegistrationManager : MonoBehaviour
     
     private void OnMainImageButtonClicked()
     {
-        Debug.Log("🖼️ 메인 이미지 선택 버튼 클릭");
-        
         // 실제 구현에서는 파일 다이얼로그를 띄워야 함
         // 여기서는 테스트용으로 더미 이미지 생성
         CreateDummyMainImage();
@@ -252,11 +232,6 @@ public class DogRegistrationManager : MonoBehaviour
     
     private void CreateDummyMainImage()
     {
-        Debug.Log("🖼️ 테스트 이미지 설정");
-        
-        // 테스트 이미지 문제 해결을 위해 항상 더미 이미지 사용
-        Debug.Log("⚠️ 더미 이미지 생성 (텍스처 읽기 문제 해결)");
-        
         // 테스트용 더미 이미지 생성 (읽기 가능한 텍스처)
         Texture2D dummyTexture = new Texture2D(400, 300, TextureFormat.RGB24, false);
         Color[] pixels = new Color[400 * 300];
@@ -307,26 +282,32 @@ public class DogRegistrationManager : MonoBehaviour
     
     private void CheckSubmitButtonState()
     {
-        // 임시로 항상 활성화 (테스트용)
-        submitButton.interactable = true;
-        Debug.Log("🎯 버튼 강제 활성화 (테스트용)");
-        
-        /* 원래 코드 (주석 처리)
+        // 원래 검증 로직으로 복원
         bool nameValid = !string.IsNullOrEmpty(dogNameInputField.text.Trim());
         bool callNameValid = !string.IsNullOrEmpty(callNameInputField.text.Trim());
         bool genderValid = !string.IsNullOrEmpty(selectedGender);
-        bool birthValid = yearDropdown.value >= 0 && monthDropdown.value >= 0 && dayDropdown.value >= 0;
+        bool birthValid = yearDropdown.value > 0 && monthDropdown.value > 0 && dayDropdown.value > 0;
         bool personalityValid = personality1Dropdown.value > 0;
         bool imageValid = isImageSelected && mainImageTexture != null;
         
         bool canSubmit = nameValid && callNameValid && genderValid && birthValid && personalityValid && imageValid;
         submitButton.interactable = canSubmit;
-        */
+    }
+    
+    private void LogMessage(string message)
+    {
+        Debug.Log(message);
+        
+        // UI에도 표시 (선택사항)
+        if (debugText != null)
+        {
+            debugText.text = message;
+        }
     }
     
     public void OnSubmitClicked()
     {
-        Debug.Log("🐶 강아지 등록 버튼 클릭");
+        LogMessage("🐶 강아지 등록 시작");
         
         if (!ValidateInput())
             return;
@@ -338,37 +319,37 @@ public class DogRegistrationManager : MonoBehaviour
     {
         if (string.IsNullOrEmpty(dogNameInputField.text.Trim()))
         {
-            Debug.LogWarning("❌ 강아지 이름을 입력해주세요.");
+            LogMessage("❌ 강아지 이름을 입력해주세요.");
             return false;
         }
         
         if (string.IsNullOrEmpty(callNameInputField.text.Trim()))
         {
-            Debug.LogWarning("❌ 애칭을 입력해주세요.");
+            LogMessage("❌ 애칭을 입력해주세요.");
             return false;
         }
         
         if (string.IsNullOrEmpty(selectedGender))
         {
-            Debug.LogWarning("❌ 성별을 선택해주세요.");
+            LogMessage("❌ 성별을 선택해주세요.");
             return false;
         }
         
         if (yearDropdown.value < 0 || monthDropdown.value < 0 || dayDropdown.value < 0)
         {
-            Debug.LogWarning("❌ 생년월일을 모두 선택해주세요.");
+            LogMessage("❌ 생년월일을 모두 선택해주세요.");
             return false;
         }
         
         if (personality1Dropdown.value == 0)
         {
-            Debug.LogWarning("❌ 최소 하나의 성격을 선택해주세요.");
+            LogMessage("❌ 최소 하나의 성격을 선택해주세요.");
             return false;
         }
         
         if (!isImageSelected || mainImageTexture == null)
         {
-            Debug.LogWarning("❌ 메인 이미지를 선택해주세요.");
+            LogMessage("❌ 메인 이미지를 선택해주세요.");
             return false;
         }
         
@@ -379,14 +360,17 @@ public class DogRegistrationManager : MonoBehaviour
     {
         if (loadingPanel != null)
             loadingPanel.SetActive(true);
-            
-        Debug.Log("🚀 강아지 등록 요청 시작");
         
         // JWT 토큰 가져오기
         string accessToken = PlayerPrefs.GetString("AccessToken", "");
         if (string.IsNullOrEmpty(accessToken))
+            accessToken = PlayerPrefs.GetString("jwtToken", "");
+        if (string.IsNullOrEmpty(accessToken))
+            accessToken = PlayerPrefs.GetString("authToken", "");
+            
+        if (string.IsNullOrEmpty(accessToken))
         {
-            Debug.LogError("❌ 액세스 토큰이 없습니다.");
+            LogMessage("❌ 액세스 토큰을 찾을 수 없습니다. 로그인을 다시 시도해주세요.");
             if (loadingPanel != null)
                 loadingPanel.SetActive(false);
             yield break;
@@ -402,8 +386,11 @@ public class DogRegistrationManager : MonoBehaviour
             form.AddField("callName", callNameInputField.text.Trim());
             form.AddField("gender", selectedGender);
             
-            // 생년월일 조합 추가
-            string birthDate = $"{yearDropdown.options[yearDropdown.value].text}-{monthDropdown.options[monthDropdown.value].text}-{dayDropdown.options[dayDropdown.value].text}";
+            // 생년월일 조합 수정 (패딩 추가)
+            string year = yearDropdown.options[yearDropdown.value].text;
+            string month = monthDropdown.options[monthDropdown.value].text.PadLeft(2, '0');
+            string day = dayDropdown.options[dayDropdown.value].text.PadLeft(2, '0');
+            string birthDate = $"{year}-{month}-{day}";
             form.AddField("birth", birthDate);
             
             // 성격 ID 추가
@@ -419,40 +406,53 @@ public class DogRegistrationManager : MonoBehaviour
             // 메인 이미지 추가
             byte[] mainImageBytes = mainImageTexture.EncodeToJPG();
             form.AddBinaryData("mainImage", mainImageBytes, "main_image.jpg", "image/jpeg");
-            
-            Debug.Log($"📋 요청 데이터: 이름={dogNameInputField.text.Trim()}, 애칭={callNameInputField.text.Trim()}, 성별={selectedGender}, 생일={birthDate}");
         }
         catch (Exception e)
         {
-            Debug.LogError($"❌ 요청 데이터 준비 중 예외 발생: {e.Message}");
+            LogMessage($"❌ 요청 데이터 준비 중 오류 발생: {e.Message}");
             if (loadingPanel != null)
                 loadingPanel.SetActive(false);
             yield break;
         }
         
-        // HTTP 요청 (try-catch 블록 밖에서 yield return 사용)
+        // HTTP 요청
         using (UnityWebRequest request = UnityWebRequest.Post($"{serverUrl}/api/dog/create", form))
         {
             request.SetRequestHeader("Authorization", $"Bearer {accessToken}");
+            request.timeout = 30;
             
             yield return request.SendWebRequest();
             
             // 응답 처리
             if (request.result == UnityWebRequest.Result.Success)
             {
-                Debug.Log("✅ 강아지 등록 성공!");
-                Debug.Log($"📄 응답: {request.downloadHandler.text}");
+                LogMessage("✅ 강아지 등록 성공!");
                 
-                // 성공 로그 추가
-                Debug.Log($"🎉 '{dogNameInputField.text.Trim()}' 강아지가 성공적으로 등록되었습니다!");
+                string response = request.downloadHandler.text;
+                
+                if (long.TryParse(response, out long customId))
+                {
+                    PlayerPrefs.SetInt("CustomId", (int)customId);
+                    PlayerPrefs.Save();
+                    LogMessage($"💾 CustomId 저장 완료: {customId}");
+                }
+                else
+                {
+                    LogMessage($"❌ CustomId 파싱 실패: {response}");
+                }
+                
+                LogMessage($"🎉 '{dogNameInputField.text.Trim()}' 강아지 등록 완료!");
                 
                 // 다음 씬으로 이동
                 SceneManager.LoadScene(nextSceneName);
             }
             else
             {
-                Debug.LogError($"❌ 강아지 등록 실패: {request.responseCode}");
-                Debug.LogError($"📄 에러 메시지: {request.downloadHandler.text}");
+                LogMessage($"❌ 강아지 등록 실패: {request.responseCode}");
+                if (!string.IsNullOrEmpty(request.downloadHandler.text))
+                {
+                    LogMessage($"서버 메시지: {request.downloadHandler.text}");
+                }
             }
         }
         
