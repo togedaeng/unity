@@ -104,6 +104,55 @@ namespace TogedaengData
         public T data;
         public string message;
     }
+
+    /// <summary>
+    /// 강아지 등록 요청 데이터
+    /// </summary>
+    [System.Serializable]
+    public class CreateDogRequest
+    {
+        public string name;
+        public string gender;  // "M" 또는 "F"
+        public string birth;   // "YYYY-MM-DD" 형식
+        public string callName;
+        public long personalityId1;
+        public long personalityId2;
+    }
+
+    /// <summary>
+    /// 강아지 등록 응답 데이터
+    /// </summary>
+    [System.Serializable]
+    public class CreateDogResponse
+    {
+        public long id;
+        public string name;
+        public string gender;
+        public string birth;
+        public string callName;
+        public string status;
+        public string createdAt;
+    }
+
+    /// <summary>
+    /// 강아지 성격 데이터
+    /// </summary>
+    [System.Serializable]
+    public class DogPersonality
+    {
+        public long id;
+        public string name;
+        public string description;
+    }
+
+    /// <summary>
+    /// 성격 목록 응답 (향후 API 추가 시 사용)
+    /// </summary>
+    [System.Serializable]
+    public class PersonalityListResponse
+    {
+        public DogPersonality[] personalities;
+    }
 }
 
 public class CommonDataTypes : MonoBehaviour
