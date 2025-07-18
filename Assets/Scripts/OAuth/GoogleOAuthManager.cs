@@ -11,7 +11,7 @@ public class GoogleOAuthManager : MonoBehaviour
     [Header("OAuth 설정")]
     public string androidClientId = "501518296843-lpp8uf9pvv7h340kuhgdfloo99hvdvd3.apps.googleusercontent.com";
     public string webClientId = "501518296843-b7rlj3ofer9eaa0293a1kops8m95e4ta.apps.googleusercontent.com";
-    public string backendUrl = "http://localhost:8080";
+    public string backendUrl = "http://43.201.51.65:8080";
     
     [Header("이벤트")]
     public UnityEvent<TokenResponse> OnLoginSuccess;
@@ -29,7 +29,7 @@ public class GoogleOAuthManager : MonoBehaviour
         // 플랫폼별 클라이언트 ID 선택
         #if UNITY_EDITOR
             currentClientId = webClientId;
-            redirectUri = "http://localhost:8080/oauth/callback/google";
+            redirectUri = "http://43.201.51.65:8080/oauth/callback/google";
         #elif UNITY_ANDROID || UNITY_IOS
             currentClientId = androidClientId;  // Android 클라이언트 ID 사용
             redirectUri = "com.DefaultCompany.socialLoginTest://oauth/callback";
@@ -37,9 +37,9 @@ public class GoogleOAuthManager : MonoBehaviour
         
         // 백엔드 URL도 플랫폼별로 설정
         #if UNITY_EDITOR
-            backendUrl = "http://localhost:8080";
+            backendUrl = "http://43.201.51.65:8080";
         #else
-            backendUrl = "http://localhost:8080";  // 실제 IP
+            backendUrl = "http://43.201.51.65:8080";  // 실제 IP
         #endif
         
         // Deep Link 콜백 등록

@@ -27,6 +27,19 @@ AnimatorState:
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
   m_TimeParameter: 
+--- !u!114 &-8713462654487002290
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99587c39729b24a94a28b48bf2474ddc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animationType: Down
 --- !u!1102 &-8638074809467863828
 AnimatorState:
   serializedVersion: 6
@@ -301,6 +314,19 @@ AnimatorStateTransition:
   m_InterruptionSource: 0
   m_OrderedInterruption: 1
   m_CanTransitionToSelf: 1
+--- !u!114 &-1564186188470624609
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99587c39729b24a94a28b48bf2474ddc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animationType: Hand
 --- !u!1102 &-986851668785307005
 AnimatorState:
   serializedVersion: 6
@@ -428,6 +454,19 @@ AnimatorState:
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
   m_TimeParameter: 
+--- !u!114 &1993152588022951373
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99587c39729b24a94a28b48bf2474ddc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animationType: Sit
 --- !u!1101 &3482102309291538137
 AnimatorStateTransition:
   m_ObjectHideFlags: 1
@@ -732,7 +771,7 @@ AnimatorStateMachine:
     m_Position: {x: 1065.6782, y: 24.604004, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -3148768052565936887}
-    m_Position: {x: 1386.0962, y: 14.795288, z: 0}
+    m_Position: {x: 1390, y: 10, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -9142372588840222709}
     m_Position: {x: 860, y: -390, z: 0}

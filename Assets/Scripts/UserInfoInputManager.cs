@@ -11,7 +11,7 @@ using TogedaengData;
 public class UserInfoInputManager : MonoBehaviour
 {
     [Header("서버 설정")]
-    [SerializeField] private string serverUrl = "http://localhost:8080";
+    [SerializeField] private string serverUrl = "http://43.201.51.65:8080";
     
     [Header("UI 요소들")]
     [SerializeField] private TMP_InputField nicknameInputField;

@@ -9,7 +9,7 @@ using UnityEngine.SceneManagement;
 public class SubImageManager : MonoBehaviour
 {
     [Header("서버 설정")]
-    [SerializeField] private string serverUrl = "http://localhost:8080";
+    [SerializeField] private string serverUrl = "http://43.201.51.65:8080";
     
     [Header("서브 이미지 버튼들")]
     [SerializeField] private Button subImage1Button;

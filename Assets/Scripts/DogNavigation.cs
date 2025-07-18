@@ -29,6 +29,12 @@ public class DogNavigation : MonoBehaviour
     private Vector3 lastPosition; // 이전 프레임의 위치
     private float positionCheckTimer = 0f; // 위치 체크 타이머
 
+    // 클래스 상단 변수 추가
+    private bool navigationPaused = false; // 네비게이션 일시 중지 상태
+    private bool wasWaitingBeforePause = false; // 일시 중지 전 대기 상태 저장
+    private Vector3 pausedPosition; // 일시 중지된 위치 저장
+    private Quaternion pausedRotation; // 일시 중지된 회전 저장
+
     void Start()
     {
         // 스크립트가 적용된 오브젝트의 NavMeshAgent 컴포넌트를 가져옵니다.
@@ -52,6 +58,26 @@ public class DogNavigation : MonoBehaviour
 
     void Update()
     {
+        // 네비게이션이 일시 중지된 경우 위치와 회전 완전 고정
+        if (navigationPaused)
+        {
+            // 위치와 회전 강제 고정
+            transform.position = pausedPosition;
+            transform.rotation = pausedRotation;
+            
+            // NavMeshAgent 상태 재확인
+            if (agent != null && agent.isActiveAndEnabled)
+            {
+                agent.velocity = Vector3.zero;
+                agent.isStopped = true;
+                agent.updatePosition = false;
+                agent.updateRotation = false;
+            }
+            
+            UpdateAnimation(); // 애니메이션은 계속 업데이트
+            return;
+        }
+        
         // 끼임 감지 체크
         CheckIfStuck();
         
@@ -258,6 +284,97 @@ public class DogNavigation : MonoBehaviour
         {
             // 유효한 위치를 찾지 못했다면 다시 시도
             SetRandomDestination();
+        }
+    }
+
+    /// <summary>
+    /// 상호작용 애니메이션 시작 시 네비게이션 완전 정지
+    /// </summary>
+    public void PauseNavigation()
+    {
+        if (navigationPaused) return;
+        
+        navigationPaused = true;
+        wasWaitingBeforePause = isWaiting;
+        
+        pausedPosition = transform.position;
+        pausedRotation = transform.rotation;
+        
+        if (agent != null)
+        {
+            agent.ResetPath();
+            agent.velocity = Vector3.zero;
+            agent.isStopped = true;
+            agent.updateRotation = false;
+            agent.updatePosition = false;
+        }
+        
+        isWaiting = true;
+        stuckTimer = 0f;
+        isStuck = false;
+    }
+
+    /// <summary>
+    /// 상호작용 애니메이션 완료 시 네비게이션 재개
+    /// </summary>
+    public void ResumeNavigation()
+    {
+        if (!navigationPaused) return;
+        
+        navigationPaused = false;
+        
+        if (agent != null)
+        {
+            agent.updatePosition = true;
+            agent.updateRotation = true;
+            agent.isStopped = false;
+            agent.velocity = Vector3.zero;
+        }
+        
+        isWaiting = wasWaitingBeforePause;
+        
+        if (!isWaiting)
+        {
+            waitTimer = Random.Range(2f, 3f);
+            isWaiting = true;
+        }
+        else
+        {
+            waitTimer = Random.Range(minWaitTime, maxWaitTime);
+        }
+    }
+
+    /// <summary>
+    /// 현재 네비게이션이 일시 중지 상태인지 확인
+    /// </summary>
+    public bool IsNavigationPaused()
+    {
+        return navigationPaused;
+    }
+
+    /// <summary>
+    /// 지연된 네비게이션 재개
+    /// </summary>
+    private System.Collections.IEnumerator DelayedResumeNavigation()
+    {
+        // 애니메이션 완료 후 고정 시간 대기 (3초)
+        yield return new WaitForSeconds(3f);
+        
+        DogNavigation dogNavigation = GetComponent<DogNavigation>();
+        if (dogNavigation != null)
+        {
+            dogNavigation.ResumeNavigation();
+            Debug.Log("🔓 네비게이션 지연 재개됨 (3초 대기 완료)");
+        }
+    }
+
+    void LateUpdate()
+    {
+        // 네비게이션이 일시 중지된 경우 위치와 회전 재차 고정
+        if (navigationPaused)
+        {
+            transform.position = pausedPosition;
+            transform.rotation = pausedRotation;
         }
     }
 }

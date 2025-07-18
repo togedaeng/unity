@@ -15,7 +15,7 @@ public class DogInteractionController : MonoBehaviour
     [SerializeField] private Button handButton;
     [SerializeField] private Button lieDownButton;
     [SerializeField] private Button sitButton;
-    
+
     [Header("카메라 설정")]
     [SerializeField] private CinemachineCamera clearShotCamera;
     [SerializeField] private CinemachineCamera dogCloseCamera;
@@ -37,12 +37,13 @@ public class DogInteractionController : MonoBehaviour
     
     [Header("클릭 감지 설정")]
     [SerializeField] private LayerMask dogLayerMask = -1;
+    [SerializeField] private LayerMask voiceButtonLayer = -1; // Added for voice button
     
     private Camera sceneCamera;
     private bool isCanvasVisible = false;
     private bool isCameraTransitioned = false;
     private Coroutine fadeCoroutine;
-    
+
     private void Awake()
     {
         if (interactionCanvas != null)
@@ -55,6 +56,12 @@ public class DogInteractionController : MonoBehaviour
     private void Start()
     {
         sceneCamera = Camera.main;
+        
+        if (sceneCamera == null)
+        {
+            sceneCamera = FindFirstObjectByType<Camera>();
+        }
+        
         FindCameras();
         FindAnimator();
         FindAndSetupButtons();
@@ -66,6 +73,8 @@ public class DogInteractionController : MonoBehaviour
         
         SetupInitialCameras();
         CheckRequiredComponents();
+        
+        SetupButtonEventListeners();
         
         Debug.Log("강아지 상호작용 시스템 초기화 완료");
     }
@@ -150,6 +159,27 @@ public class DogInteractionController : MonoBehaviour
         }
     }
     
+    private void SetupButtonEventListeners()
+    {
+        if (handButton != null)
+        {
+            handButton.onClick.RemoveAllListeners();
+            handButton.onClick.AddListener(PlayHandAnimation);
+        }
+        
+        if (lieDownButton != null)
+        {
+            lieDownButton.onClick.RemoveAllListeners();
+            lieDownButton.onClick.AddListener(PlayLieDownAnimation);
+        }
+        
+        if (sitButton != null)
+        {
+            sitButton.onClick.RemoveAllListeners();
+            sitButton.onClick.AddListener(PlaySitAnimation);
+        }
+    }
+    
     private void FindAnimator()
     {
         if (dogAnimator == null)
@@ -190,11 +220,31 @@ public class DogInteractionController : MonoBehaviour
         }
     }
     
+    private Vector2 mouseDownPosition;
+    private bool isDragDetected = false;
+
     private void Update()
     {
         if (Input.GetMouseButtonDown(0))
         {
-            HandleUnifiedClick();
+            mouseDownPosition = Input.mousePosition;
+            isDragDetected = false;
+        }
+        else if (Input.GetMouseButton(0))
+        {
+            // 드래그 감지 (5픽셀 이상 이동)
+            if (Vector2.Distance(Input.mousePosition, mouseDownPosition) > 5f)
+            {
+                isDragDetected = true;
+            }
+        }
+        else if (Input.GetMouseButtonUp(0))
+        {
+            // 드래그가 아닌 클릭인 경우에만 HandleUnifiedClick 실행
+            if (!isDragDetected)
+            {
+                HandleUnifiedClick();
+            }
         }
     }
     
@@ -203,6 +253,12 @@ public class DogInteractionController : MonoBehaviour
         if (EventSystem.current == null) return;
         
         Vector2 mousePos = Input.mousePosition;
+        
+        // 먼저 녹음 버튼 클릭 여부 확인
+        if (IsClickingVoiceButton())
+        {
+            return; // 녹음 버튼 클릭 시 카메라 전환 하지 않음
+        }
         
         // 캔버스가 표시된 상태에서 UI 클릭 확인
         if (isCanvasVisible && interactionCanvas != null)
@@ -238,14 +294,12 @@ public class DogInteractionController : MonoBehaviour
                     }
                 }
                 
-                // UI 클릭했지만 버튼이 아닌 경우 - 캔버스 유지
                 if (results.Count > 0)
                 {
                     return;
                 }
             }
             
-            // 캔버스가 표시된 상태에서 빈 공간 클릭 - 캔버스 숨김
             OnEmptySpaceClicked();
             return;
         }
@@ -273,29 +327,20 @@ public class DogInteractionController : MonoBehaviour
     
     private void OnDogClicked()
     {
-        if (!isCanvasVisible)
-        {
-            TransitionToDogCamera();
-            ShowCanvasWithFade();
-        }
+        // 강아지 클릭 시 줌인만
+        TransitionToDogCamera();
     }
     
     private void OnOtherObjectClicked()
     {
-        if (isCanvasVisible)
-        {
-            HideCanvasWithFade();
-            TransitionToClearShotCamera();
-        }
+        // 다른 오브젝트 클릭 시 줌아웃
+        TransitionToClearShotCamera();
     }
     
     private void OnEmptySpaceClicked()
     {
-        if (isCanvasVisible)
-        {
-            HideCanvasWithFade();
-            TransitionToClearShotCamera();
-        }
+        // 빈 공간 클릭 시 줌아웃
+        TransitionToClearShotCamera();
     }
     
     private void TransitionToDogCamera()
@@ -370,22 +415,49 @@ public class DogInteractionController : MonoBehaviour
     }
     
     // 애니메이션 실행 메서드들
-    public void PlayHandAnimation()
-    {
-        Debug.Log("손 애니메이션 실행");
-        PlayAnimation(handTrigger);
-    }
-    
-    public void PlayLieDownAnimation()
-    {
-        Debug.Log("엎드려 애니메이션 실행");
-        PlayAnimation(lieDownTrigger);
-    }
-    
     public void PlaySitAnimation()
     {
-        Debug.Log("앉아 애니메이션 실행");
+        // 네비게이션 일시 중지
+        DogNavigation dogNavigation = GetComponent<DogNavigation>();
+        if (dogNavigation != null)
+        {
+            dogNavigation.PauseNavigation();
+        }
+        
         PlayAnimation(sitTrigger);
+        
+        // 4초 후 네비게이션 재개 (애니메이션 완료 추정 시간)
+        StartCoroutine(ResumeNavigationAfterDelay(4f));
+    }
+
+    public void PlayHandAnimation()
+    {
+        // 네비게이션 일시 중지
+        DogNavigation dogNavigation = GetComponent<DogNavigation>();
+        if (dogNavigation != null)
+        {
+            dogNavigation.PauseNavigation();
+        }
+        
+        PlayAnimation(handTrigger);
+        
+        // 3초 후 네비게이션 재개
+        StartCoroutine(ResumeNavigationAfterDelay(3f));
+    }
+
+    public void PlayLieDownAnimation()
+    {
+        // 네비게이션 일시 중지
+        DogNavigation dogNavigation = GetComponent<DogNavigation>();
+        if (dogNavigation != null)
+        {
+            dogNavigation.PauseNavigation();
+        }
+        
+        PlayAnimation(lieDownTrigger);
+        
+        // 5초 후 네비게이션 재개 (엎드려는 조금 더 길게)
+        StartCoroutine(ResumeNavigationAfterDelay(5f));
     }
     
     private void PlayAnimation(string triggerName)
@@ -400,22 +472,69 @@ public class DogInteractionController : MonoBehaviour
         }
     }
     
-    // 공개 메서드들
-    public void ShowCanvasPublic()
+    /// <summary>
+    /// 지정된 시간 후 네비게이션 재개
+    /// </summary>
+    private System.Collections.IEnumerator ResumeNavigationAfterDelay(float delay)
     {
-        TransitionToDogCamera();
-        ShowCanvasWithFade();
+        yield return new WaitForSeconds(delay);
+        
+        DogNavigation dogNavigation = GetComponent<DogNavigation>();
+        if (dogNavigation != null)
+        {
+            dogNavigation.ResumeNavigation();
+        }
     }
-    
-    public void HideCanvasPublic()
+
+    /// <summary>
+    /// 카메라 전환에 영향을 받지 않는 UI 버튼들 클릭 여부 확인
+    /// </summary>
+    private bool IsClickingVoiceButton()
     {
-        HideCanvasWithFade();
-        TransitionToClearShotCamera();
+        PointerEventData pointerData = new PointerEventData(EventSystem.current);
+        pointerData.position = Input.mousePosition;
+        
+        List<RaycastResult> results = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(pointerData, results);
+        
+        foreach (RaycastResult result in results)
+        {
+            // 카메라 전환에 영향을 받지 않을 버튼들
+            if (result.gameObject.name == "Button_voice" || 
+                result.gameObject.name == "Button_water" ||
+                result.gameObject.name == "Button_heart" ||
+                result.gameObject.name == "Button_food" ||
+                result.gameObject.name == "paw" ||          // 👈 추가
+                result.gameObject.name == "sit" ||          // 👈 추가
+                result.gameObject.name == "Lie down" ||     // 👈 추가
+                result.gameObject.name.Contains("voice") ||
+                result.gameObject.name.Contains("Voice"))
+            {
+                return true;
+            }
+        }
+        
+        return false;
     }
-    
-    public bool IsCanvasVisible()
+
+    /// <summary>
+    /// 카메라 드래그 중인지 확인
+    /// </summary>
+    private bool IsCameraDragging()
     {
-        return isCanvasVisible;
+        CameraController cameraController = FindObjectOfType<CameraController>();
+        if (cameraController != null)
+        {
+            // CameraController의 isDragging 상태 확인
+            var field = cameraController.GetType().GetField("isDragging", 
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            
+            if (field != null)
+            {
+                return (bool)field.GetValue(cameraController);
+            }
+        }
+        return false;
     }
 }
 
